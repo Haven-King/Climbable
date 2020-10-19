@@ -6,12 +6,14 @@ import net.minecraft.tag.Tag;
 
 import java.util.HashMap;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 public class ClimbingSpeedRegistry {
+	private static final DoubleSupplier DEFAULT = () -> 1D;
 	private static final BooleanSupplier ALWAYS = () -> true;
 
-	private static final HashMap<Block, Double> BLOCK_MODIFIERS = new HashMap<>();
-	private static final HashMap<Tag<Block>, Double> TAG_MODIFIERS = new HashMap<>();
+	private static final HashMap<Block, DoubleSupplier> BLOCK_MODIFIERS = new HashMap<>();
+	private static final HashMap<Tag<Block>, DoubleSupplier> TAG_MODIFIERS = new HashMap<>();
 	private static final HashMap<Block, BooleanSupplier> BLOCK_CLIMBABLE = new HashMap<>();
 	private static final HashMap<Tag<Block>, BooleanSupplier> TAG_CLIMBABLE = new HashMap<>();
 
@@ -23,11 +25,19 @@ public class ClimbingSpeedRegistry {
 		registerClimbableTag(tag, climbingSpeedModifier, ALWAYS);
 	}
 
+	public static void registerClimbableTag(Tag<Block> tag, DoubleSupplier climbingSpeedModifier) {
+		registerClimbableTag(tag, climbingSpeedModifier, ALWAYS);
+	}
+
 	public static void registerClimbableTag(Tag<Block> tag, BooleanSupplier canClimb) {
 		registerClimbableTag(tag, 1D, canClimb);
 	}
 
 	public static void registerClimbableTag(Tag<Block> tag, double climbingSpeedModifier, BooleanSupplier canClimb) {
+		registerClimbableTag(tag, () -> climbingSpeedModifier, canClimb);
+	}
+
+	public static void registerClimbableTag(Tag<Block> tag, DoubleSupplier climbingSpeedModifier, BooleanSupplier canClimb) {
 		TAG_MODIFIERS.put(tag, climbingSpeedModifier);
 		TAG_CLIMBABLE.put(tag, canClimb);
 	}
@@ -41,18 +51,22 @@ public class ClimbingSpeedRegistry {
 	}
 
 	public static void registerClimbingSpeedModifier(Block block, double climbingSpeedModifier, BooleanSupplier canClimb) {
+		registerClimbingSpeedModifier(block, () -> climbingSpeedModifier, canClimb);
+	}
+
+	public static void registerClimbingSpeedModifier(Block block, DoubleSupplier climbingSpeedModifier, BooleanSupplier canClimb) {
 		BLOCK_MODIFIERS.put(block, climbingSpeedModifier);
 		BLOCK_CLIMBABLE.put(block, canClimb);
 	}
 
 	public static double getModifier(Block block) {
 		if (BLOCK_MODIFIERS.containsKey(block)) {
-			return BLOCK_MODIFIERS.getOrDefault(block, 1D);
+			return BLOCK_MODIFIERS.getOrDefault(block, DEFAULT).getAsDouble();
 		} else {
 			double speed = 1D;
 			for (Tag<Block> blockTag : TAG_MODIFIERS.keySet()) {
 				if (block.isIn(blockTag)) {
-					speed = speed * TAG_MODIFIERS.get(blockTag);
+					speed = speed * TAG_MODIFIERS.get(blockTag).getAsDouble();
 				}
 			}
 		}
