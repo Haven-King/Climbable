@@ -5,16 +5,13 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.tag.BlockTags;
+import net.minecraft.tag.Tag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
@@ -27,12 +24,17 @@ public abstract class AdjustClimbingSpeed extends Entity {
 		super(type, world);
 	}
 
+	@Redirect(method = "isClimbing", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;isIn(Lnet/minecraft/tag/Tag;)Z"))
+	private boolean isClimbable(Block block, Tag<Block> tag) {
+		return ClimbingSpeedRegistry.canClimb(block);
+	}
+
 	@Inject(method = "isClimbing", at = @At("RETURN"), cancellable = true)
 	private void allowClimbingOfSolidObjects(CallbackInfoReturnable<Boolean> cir) {
 		if (!cir.getReturnValue()) {
 			BlockPos pos = this.getBlockPos().offset(this.getMovementDirection());
 			Block block = this.getEntityWorld().getBlockState(pos).getBlock();
-			if (this.horizontalCollision && block.isIn(BlockTags.CLIMBABLE)) {
+			if (this.horizontalCollision && ClimbingSpeedRegistry.canClimb(block)) {
 				this.climbingPos = Optional.of(pos);
 				cir.setReturnValue(true);
 			}

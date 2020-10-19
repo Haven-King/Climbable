@@ -9,7 +9,7 @@ public class TestEntrypoint implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-			ClimbingSpeedRegistry.register(Blocks.COBBLESTONE, 0.5);
+			ClimbingSpeedRegistry.registerClimbingSpeedModifier(Blocks.COBBLESTONE, 0.5);
 		}
 	}
 }
