@@ -50,6 +50,10 @@ public class ClimbingSpeedRegistry {
 		registerClimbingSpeedModifier(block, climbingSpeedModifier, ALWAYS);
 	}
 
+	public static void registerClimbingSpeedModifier(Block block, DoubleSupplier climbingSpeedModifier) {
+		registerClimbingSpeedModifier(block, climbingSpeedModifier, ALWAYS);
+	}
+
 	public static void registerClimbingSpeedModifier(Block block, double climbingSpeedModifier, BooleanSupplier canClimb) {
 		registerClimbingSpeedModifier(block, () -> climbingSpeedModifier, canClimb);
 	}
@@ -60,10 +64,11 @@ public class ClimbingSpeedRegistry {
 	}
 
 	public static double getModifier(Block block) {
+		double speed = 1D;
+
 		if (BLOCK_MODIFIERS.containsKey(block)) {
 			return BLOCK_MODIFIERS.getOrDefault(block, DEFAULT).getAsDouble();
 		} else {
-			double speed = 1D;
 			for (Tag<Block> blockTag : TAG_MODIFIERS.keySet()) {
 				if (block.isIn(blockTag)) {
 					speed = speed * TAG_MODIFIERS.get(blockTag).getAsDouble();
@@ -71,7 +76,7 @@ public class ClimbingSpeedRegistry {
 			}
 		}
 
-		return 1D;
+		return speed;
 	}
 
 	public static boolean canClimb(Block block) {
