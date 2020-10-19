@@ -10,9 +10,6 @@
   "icon": "assets/climbable/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "dev.hephaestus.climbable.impl.TestEntrypoint"
-    ]
   },
   "mixins": [
     "climbable.mixins.json"
